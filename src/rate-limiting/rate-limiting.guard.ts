@@ -5,19 +5,24 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
+import {RedisInstance} from "../db/redis";
 
 @Injectable()
 export class RateLimitingGuard implements CanActivate {
   private readonly ipMap = new Map();
   private readonly userIdMap = new Map();
 
-  canActivate(
+  async canActivate(
     context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const ip = request.ip;
     const userId = request.query.userId;
     const now = Date.now();
+
+    // const redis = await RedisInstance.initRedis('TokenGuard.canActivate', 0);
+    // await redis.setex('test1', 300, now);
+    // await redis.get('test1')
 
     const ipCount = this.calcCount(ip, now, this.ipMap);
     const userIdCount = this.calcCount(userId, now, this.userIdMap);
